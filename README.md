@@ -2,6 +2,8 @@
 
 ## Use Case 1: OCR
 
+do the OCR, currently only test against english.
+
 ![OCR sample](examples/ocr_document.png)
 
 - sample output
@@ -17,6 +19,8 @@ Here is the full text from the page:
 ```
 
 ## Use Case 2: WebPage -> HTML
+
+extract the html from webpage.
 
 ![OCR sample](examples/webpage.png)
 
@@ -49,6 +53,8 @@ Here is the full text from the page:
 
 ### Use Case 3: Diagram -> Discription
 
+extract the flowchart from image.
+
 ![OCR sample](examples/flowchart.png)
 
 - sample output
@@ -73,6 +79,8 @@ graph TD
 ```
 
 ### Use Case 4: Diagram -> Source Code
+
+generate source code base on diagram.
 
 ![OCR sample](examples/classdiagram.png)
 
