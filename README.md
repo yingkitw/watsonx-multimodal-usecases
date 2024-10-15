@@ -45,7 +45,7 @@ Here is the full text from the page:
         </nav>
     </header>
     <main>
-...
+```
 
 ### Use Case 3: Diagram -> Discription
 
