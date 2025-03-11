@@ -195,8 +195,3 @@ For production deployment, consider the following:
 - If authentication fails, check your API key in the `.env` file.
 - If image processing fails, try refreshing your token or check your internet connection.
 - For large images, processing may take longer than expected.
-
-## License
-
-This project is licensed under the Apache 2.0 License - see the LICENSE file for details.
-
