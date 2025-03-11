@@ -4,168 +4,276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IBM Granite Vision Demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <!-- Carbon Design System -->
+    <link rel="stylesheet" href="https://unpkg.com/carbon-components/css/carbon-components.min.css">
+    <!-- Syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         body {
-            padding-top: 20px;
-            padding-bottom: 20px;
+            background-color: #f4f4f4;
+            color: #161616;
         }
-        .header {
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e5e5e5;
-            margin-bottom: 30px;
+        .bx--content {
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+        .app-header {
+            margin-bottom: 2rem;
         }
         .sidebar {
-            position: sticky;
-            top: 20px;
+            margin-bottom: 2rem;
         }
         .result-container {
-            border: 1px solid #ddd;
+            border: 1px solid #e0e0e0;
             border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 20px;
+            padding: 1rem;
+            margin-bottom: 1rem;
             min-height: 200px;
             max-height: 600px;
             overflow-y: auto;
+            background-color: #ffffff;
         }
         .image-preview {
             max-width: 100%;
             max-height: 300px;
-            margin-bottom: 15px;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
         }
         .code-block {
-            background-color: #f5f5f5;
-            border: 1px solid #ccc;
+            background-color: #f4f4f4;
+            border: 1px solid #e0e0e0;
             border-radius: 4px;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
             overflow-x: auto;
         }
         .loading {
             display: none;
             text-align: center;
-            margin: 20px 0;
+            margin: 1rem 0;
         }
-        .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
+        .bx--inline-loading {
+            display: inline-flex;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .bx--tile {
+            margin-bottom: 1rem;
+        }
+        .bx--form-item {
+            margin-bottom: 1.5rem;
+        }
+        footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            color: #6f6f6f;
+        }
+        /* Markdown styling for the result content */
+        .markdown-content h1, .markdown-content h2, .markdown-content h3, 
+        .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        .markdown-content h1 { font-size: 1.75rem; }
+        .markdown-content h2 { font-size: 1.5rem; }
+        .markdown-content h3 { font-size: 1.25rem; }
+        .markdown-content h4 { font-size: 1.125rem; }
+        .markdown-content p {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+        }
+        .markdown-content li {
+            margin-bottom: 0.25rem;
+        }
+        .markdown-content pre {
+            background-color: #f4f4f4;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            overflow-x: auto;
+        }
+        .markdown-content code {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            background-color: #f4f4f4;
+            padding: 0.125rem 0.25rem;
+            border-radius: 2px;
+        }
+        .markdown-content pre code {
+            padding: 0;
+            background-color: transparent;
+        }
+        .markdown-content table {
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+        .markdown-content th, .markdown-content td {
+            border: 1px solid #e0e0e0;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .markdown-content th {
+            background-color: #f4f4f4;
+            font-weight: 600;
+        }
+        .markdown-content blockquote {
+            border-left: 4px solid #e0e0e0;
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1rem;
+            color: #6f6f6f;
+        }
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+        }
+        .markdown-content hr {
+            border: 0;
+            border-top: 1px solid #e0e0e0;
+            margin: 1.5rem 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>IBM Granite Vision - Multimodal AI Demo</h1>
-            <p class="lead">Explore the capabilities of IBM's Granite Vision model</p>
+    <!-- Carbon header -->
+    <header class="bx--header" role="banner" aria-label="IBM Platform Name">
+        <a class="bx--header__name" href="javascript:void(0)">
+            <span class="bx--header__name--prefix">IBM</span>
+            Granite Vision
+        </a>
+    </header>
+
+    <div class="bx--content">
+        <div class="app-header">
+            <h1 class="bx--type-productive-heading-05">Multimodal AI Demo</h1>
+            <p class="bx--type-body-long-01">Explore the capabilities of IBM's Granite Vision model</p>
         </div>
 
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 sidebar">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>About</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>This application demonstrates the capabilities of IBM's Granite Vision model for various image-to-text tasks:</p>
-                        <ul>
-                            <li><strong>OCR</strong>: Extract text from documents</li>
-                            <li><strong>HTML Generation</strong>: Convert webpage screenshots to HTML</li>
-                            <li><strong>Flowchart Analysis</strong>: Generate descriptions from diagrams</li>
-                            <li><strong>Code Generation</strong>: Create code from class diagrams</li>
+        <div class="bx--grid">
+            <div class="bx--row">
+                <!-- Sidebar -->
+                <div class="bx--col-lg-4 bx--col-md-4 sidebar">
+                    <div class="bx--tile">
+                        <h3 class="bx--type-productive-heading-03">About</h3>
+                        <p class="bx--type-body-long-01">This application demonstrates the capabilities of IBM's Granite Vision model for various image-to-text tasks:</p>
+                        <ul class="bx--list--unordered">
+                            <li class="bx--list__item"><strong>OCR</strong>: Extract text from documents</li>
+                            <li class="bx--list__item"><strong>HTML Generation</strong>: Convert webpage screenshots to HTML</li>
+                            <li class="bx--list__item"><strong>Flowchart Analysis</strong>: Generate descriptions from diagrams</li>
+                            <li class="bx--list__item"><strong>Code Generation</strong>: Create code from class diagrams</li>
                         </ul>
                     </div>
-                </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Authentication</h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="auth-status" class="alert alert-warning">Not authenticated</div>
-                        <button id="auth-button" class="btn btn-primary mb-2">Authenticate with IBM Cloud</button>
-                        <button id="refresh-button" class="btn btn-secondary" disabled>Refresh Token</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content -->
-            <div class="col-md-9">
-                <div class="row">
-                    <!-- Input Column -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>Input</h5>
-                            </div>
-                            <div class="card-body">
-                                <form id="process-form">
-                                    <div class="mb-3">
-                                        <label for="task-select" class="form-label">Select a task</label>
-                                        <select id="task-select" class="form-select" name="task">
-                                            <option value="OCR">OCR: Extract text from documents</option>
-                                            <option value="HTML Generation">HTML Generation: Convert webpage screenshots to HTML</option>
-                                            <option value="Flowchart Analysis">Flowchart Analysis: Generate descriptions from diagrams</option>
-                                            <option value="Code Generation">Code Generation: Create code from class diagrams</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="custom-prompt" class="form-label">Custom prompt (optional)</label>
-                                        <textarea id="custom-prompt" class="form-control" name="prompt" rows="3" placeholder="Enter a custom prompt for the model. If left empty, a default prompt will be used based on the selected task."></textarea>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="image-upload" class="form-label">Upload an image</label>
-                                        <input type="file" id="image-upload" class="form-control" name="image" accept="image/png, image/jpeg, image/jpg">
-                                    </div>
-
-                                    <div id="image-preview-container" class="mb-3" style="display: none;">
-                                        <img id="image-preview" class="image-preview" src="" alt="Preview">
-                                    </div>
-
-                                    <button type="submit" id="process-button" class="btn btn-success" disabled>Process Image</button>
-                                </form>
-
-                                <div id="loading" class="loading">
-                                    <div class="loading-spinner"></div>
-                                    <p>Processing image...</p>
+                    <div class="bx--tile">
+                        <h3 class="bx--type-productive-heading-03">Authentication</h3>
+                        <div id="auth-status" class="bx--inline-notification bx--inline-notification--warning" role="alert">
+                            <div class="bx--inline-notification__details">
+                                <svg class="bx--inline-notification__icon" width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 1C4.1 1 1 4.1 1 8s3.1 7 7 7 7-3.1 7-7-3.1-7-7-7zm0 13c-3.3 0-6-2.7-6-6s2.7-6 6-6 6 2.7 6 6-2.7 6-6 6z"></path>
+                                    <path d="M7.5 4h1v5h-1z"></path>
+                                    <path d="M8 10.2c-.4 0-.8.3-.8.8s.3.8.8.8c.4 0 .8-.3.8-.8s-.4-.8-.8-.8z"></path>
+                                </svg>
+                                <div class="bx--inline-notification__text-wrapper">
+                                    <p class="bx--inline-notification__title">Not authenticated</p>
                                 </div>
                             </div>
                         </div>
+                        <button id="auth-button" class="bx--btn bx--btn--primary" type="button">Authenticate with IBM Cloud</button>
+                        <button id="refresh-button" class="bx--btn bx--btn--secondary" type="button" disabled>Refresh Token</button>
                     </div>
+                </div>
 
-                    <!-- Output Column -->
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>Output</h5>
+                <!-- Main Content -->
+                <div class="bx--col-lg-8 bx--col-md-8">
+                    <div class="bx--row">
+                        <!-- Input Column -->
+                        <div class="bx--col-lg-6 bx--col-md-6">
+                            <div class="bx--tile">
+                                <h3 class="bx--type-productive-heading-03">Input</h3>
+                                <form id="process-form" class="bx--form">
+                                    <div class="bx--form-item">
+                                        <label for="task-select" class="bx--label">Select a task</label>
+                                        <div class="bx--select">
+                                            <div class="bx--select-input__wrapper">
+                                                <select id="task-select" class="bx--select-input" name="task">
+                                                    <option value="OCR">OCR: Extract text from documents</option>
+                                                    <option value="HTML Generation">HTML Generation: Convert webpage screenshots to HTML</option>
+                                                    <option value="Flowchart Analysis">Flowchart Analysis: Generate descriptions from diagrams</option>
+                                                    <option value="Code Generation">Code Generation: Create code from class diagrams</option>
+                                                </select>
+                                                <svg class="bx--select__arrow" width="10" height="6" viewBox="0 0 10 6" fill-rule="evenodd">
+                                                    <path d="M5 6L0 1 0.7 0.3 5 4.6 9.3 0.3 10 1z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bx--form-item">
+                                        <label for="custom-prompt" class="bx--label">Custom prompt (optional)</label>
+                                        <div class="bx--text-area__wrapper">
+                                            <textarea id="custom-prompt" class="bx--text-area" name="prompt" rows="3" placeholder="Enter a custom prompt for the model. If left empty, a default prompt will be used based on the selected task."></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="bx--form-item">
+                                        <p class="bx--file-filename">Upload an image</p>
+                                        <div class="bx--file" data-file>
+                                            <label for="image-upload" class="bx--file-browse-btn">
+                                                <div data-file-drop-container class="bx--file__drop-container">
+                                                    <input type="file" id="image-upload" class="bx--file-input" name="image" accept="image/png, image/jpeg, image/jpg">
+                                                    <strong>Drag and drop</strong> files here or <strong>click to upload</strong>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="image-preview-container" class="bx--form-item" style="display: none;">
+                                        <img id="image-preview" class="image-preview" src="" alt="Preview">
+                                    </div>
+
+                                    <button type="submit" id="process-button" class="bx--btn bx--btn--primary" disabled>Process Image</button>
+                                </form>
+
+                                <div id="loading" class="loading">
+                                    <div class="bx--inline-loading" data-inline-loading>
+                                        <div class="bx--inline-loading__animation">
+                                            <div class="bx--loading bx--loading--small">
+                                                <svg class="bx--loading__svg" viewBox="0 0 100 100">
+                                                    <circle class="bx--loading__background" cx="50%" cy="50%" r="42"></circle>
+                                                    <circle class="bx--loading__stroke" cx="50%" cy="50%" r="42"></circle>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <p class="bx--inline-loading__text">Processing image...</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
+                        </div>
+
+                        <!-- Output Column -->
+                        <div class="bx--col-lg-6 bx--col-md-6">
+                            <div class="bx--tile">
+                                <h3 class="bx--type-productive-heading-03">Output</h3>
                                 <div id="result-container" class="result-container">
-                                    <div id="result-placeholder" class="text-center text-muted">
+                                    <div id="result-placeholder" class="bx--type-body-long-01 bx--type-light">
                                         <p>Process an image to see the results here</p>
                                     </div>
-                                    <div id="result-content" style="display: none;"></div>
+                                    <div id="result-content" class="markdown-content" style="display: none;"></div>
                                 </div>
 
                                 <div id="result-actions" style="display: none;">
-                                    <button id="download-button" class="btn btn-primary">Download Result</button>
-                                    <button id="render-html-button" class="btn btn-secondary" style="display: none;">Render HTML</button>
-                                    <button id="view-code-button" class="btn btn-info" style="display: none;">View Code</button>
+                                    <button id="download-button" class="bx--btn bx--btn--primary">Download Result</button>
+                                    <button id="render-html-button" class="bx--btn bx--btn--secondary" style="display: none;">Render HTML</button>
+                                    <button id="view-code-button" class="bx--btn bx--btn--tertiary" style="display: none;">View Code</button>
                                 </div>
 
                                 <div id="html-preview" class="mt-3" style="display: none;"></div>
@@ -177,11 +285,13 @@
             </div>
         </div>
 
-        <footer class="mt-5 pt-3 border-top text-center text-muted">
-            <p>Powered by IBM Granite Vision and Flask</p>
+        <footer>
+            <p class="bx--type-caption-01">Powered by IBM Granite Vision and Flask</p>
         </footer>
     </div>
 
+    <!-- Carbon Design System JavaScript -->
+    <script src="https://unpkg.com/carbon-components/scripts/carbon-components.min.js"></script>
     <script>
         // Initialize Mermaid
         mermaid.initialize({ startOnLoad: true });
@@ -210,11 +320,34 @@
         let currentResult = '';
         let currentTask = '';
 
+        // Update notification status
+        function updateNotification(element, type, title, subtitle = '') {
+            // Remove all status classes
+            element.classList.remove('bx--inline-notification--warning', 'bx--inline-notification--success', 'bx--inline-notification--error', 'bx--inline-notification--info');
+            
+            // Add the appropriate class
+            element.classList.add(`bx--inline-notification--${type}`);
+            
+            // Update the title
+            const titleElement = element.querySelector('.bx--inline-notification__title');
+            titleElement.textContent = title;
+            
+            // Update subtitle if provided
+            if (subtitle) {
+                let subtitleElement = element.querySelector('.bx--inline-notification__subtitle');
+                if (!subtitleElement) {
+                    subtitleElement = document.createElement('p');
+                    subtitleElement.className = 'bx--inline-notification__subtitle';
+                    titleElement.parentNode.appendChild(subtitleElement);
+                }
+                subtitleElement.textContent = subtitle;
+            }
+        }
+
         // Authentication
         authButton.addEventListener('click', async () => {
             authButton.disabled = true;
-            authStatus.innerHTML = 'Authenticating...';
-            authStatus.className = 'alert alert-info';
+            updateNotification(authStatus, 'info', 'Authenticating...');
 
             try {
                 const response = await fetch('/authenticate', {
@@ -223,18 +356,15 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    authStatus.innerHTML = data.message;
-                    authStatus.className = 'alert alert-success';
+                    updateNotification(authStatus, 'success', data.message);
                     refreshButton.disabled = false;
                     processButton.disabled = false;
                 } else {
-                    authStatus.innerHTML = data.message;
-                    authStatus.className = 'alert alert-danger';
+                    updateNotification(authStatus, 'error', data.message);
                     authButton.disabled = false;
                 }
             } catch (error) {
-                authStatus.innerHTML = 'Error: ' + error.message;
-                authStatus.className = 'alert alert-danger';
+                updateNotification(authStatus, 'error', 'Error', error.message);
                 authButton.disabled = false;
             }
         });
@@ -242,8 +372,7 @@
         // Refresh token
         refreshButton.addEventListener('click', async () => {
             refreshButton.disabled = true;
-            authStatus.innerHTML = 'Refreshing token...';
-            authStatus.className = 'alert alert-info';
+            updateNotification(authStatus, 'info', 'Refreshing token...');
 
             try {
                 const response = await fetch('/refresh_token', {
@@ -252,17 +381,14 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    authStatus.innerHTML = data.message;
-                    authStatus.className = 'alert alert-success';
+                    updateNotification(authStatus, 'success', data.message);
                     refreshButton.disabled = false;
                 } else {
-                    authStatus.innerHTML = data.message;
-                    authStatus.className = 'alert alert-danger';
+                    updateNotification(authStatus, 'error', data.message);
                     refreshButton.disabled = false;
                 }
             } catch (error) {
-                authStatus.innerHTML = 'Error: ' + error.message;
-                authStatus.className = 'alert alert-danger';
+                updateNotification(authStatus, 'error', 'Error', error.message);
                 refreshButton.disabled = false;
             }
         });
@@ -320,11 +446,11 @@
 
                     // Display the result based on the type
                     if (data.result_type === 'html') {
-                        // HTML Generation
+                        // HTML Generation - show as code
                         resultContent.innerHTML = '<pre><code class="language-html">' + escapeHtml(data.result) + '</code></pre>';
                         renderHtmlButton.style.display = 'inline-block';
                     } else if (data.result_type === 'flowchart') {
-                        // Flowchart Analysis
+                        // Flowchart Analysis - render as markdown with mermaid
                         resultContent.innerHTML = marked.parse(data.result);
                         
                         // If mermaid code is present, render it
@@ -334,10 +460,10 @@
                             }, 100);
                         }
                     } else if (data.result_type === 'code') {
-                        // Code Generation
+                        // Code Generation - render as markdown with code highlighting
                         resultContent.innerHTML = marked.parse(data.result);
                         
-                        // If code blocks are present, highlight them
+                        // If code blocks are present, highlight them and show view code button
                         if (data.code_blocks && data.code_blocks.length > 0) {
                             viewCodeButton.style.display = 'inline-block';
                             
@@ -351,14 +477,9 @@
                                     escapeHtml(block.code) + '</code></pre>';
                                 codePreview.appendChild(codeElement);
                             });
-                            
-                            // Highlight code blocks
-                            document.querySelectorAll('pre code').forEach((block) => {
-                                hljs.highlightElement(block);
-                            });
                         }
                     } else {
-                        // OCR and other tasks
+                        // OCR and other tasks - render as markdown
                         resultContent.innerHTML = marked.parse(data.result);
                     }
 
@@ -366,16 +487,16 @@
                     resultContent.style.display = 'block';
                     resultActions.style.display = 'block';
                     
-                    // Highlight code blocks
+                    // Highlight all code blocks
                     document.querySelectorAll('pre code').forEach((block) => {
                         hljs.highlightElement(block);
                     });
                 } else {
-                    resultContent.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    resultContent.innerHTML = '<div class="bx--inline-notification bx--inline-notification--error"><div class="bx--inline-notification__details"><div class="bx--inline-notification__text-wrapper"><p class="bx--inline-notification__title">' + data.message + '</p></div></div></div>';
                     resultContent.style.display = 'block';
                 }
             } catch (error) {
-                resultContent.innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';
+                resultContent.innerHTML = '<div class="bx--inline-notification bx--inline-notification--error"><div class="bx--inline-notification__details"><div class="bx--inline-notification__text-wrapper"><p class="bx--inline-notification__title">Error</p><p class="bx--inline-notification__subtitle">' + error.message + '</p></div></div></div>';
                 resultContent.style.display = 'block';
             } finally {
                 loading.style.display = 'none';
@@ -432,6 +553,22 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
+        // Configure marked.js options for better rendering
+        marked.setOptions({
+            renderer: new marked.Renderer(),
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-',
+            pedantic: false,
+            gfm: true,
+            breaks: true,
+            sanitize: false,
+            smartypants: false,
+            xhtml: false
+        });
     </script>
 </body>
 </html>
