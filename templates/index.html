@@ -1,0 +1,439 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM Granite Vision Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            margin-bottom: 30px;
+        }
+        .sidebar {
+            position: sticky;
+            top: 20px;
+        }
+        .result-container {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-bottom: 15px;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow-x: auto;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>IBM Granite Vision - Multimodal AI Demo</h1>
+            <p class="lead">Explore the capabilities of IBM's Granite Vision model</p>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 sidebar">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5>About</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>This application demonstrates the capabilities of IBM's Granite Vision model for various image-to-text tasks:</p>
+                        <ul>
+                            <li><strong>OCR</strong>: Extract text from documents</li>
+                            <li><strong>HTML Generation</strong>: Convert webpage screenshots to HTML</li>
+                            <li><strong>Flowchart Analysis</strong>: Generate descriptions from diagrams</li>
+                            <li><strong>Code Generation</strong>: Create code from class diagrams</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Authentication</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="auth-status" class="alert alert-warning">Not authenticated</div>
+                        <button id="auth-button" class="btn btn-primary mb-2">Authenticate with IBM Cloud</button>
+                        <button id="refresh-button" class="btn btn-secondary" disabled>Refresh Token</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="row">
+                    <!-- Input Column -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Input</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="process-form">
+                                    <div class="mb-3">
+                                        <label for="task-select" class="form-label">Select a task</label>
+                                        <select id="task-select" class="form-select" name="task">
+                                            <option value="OCR">OCR: Extract text from documents</option>
+                                            <option value="HTML Generation">HTML Generation: Convert webpage screenshots to HTML</option>
+                                            <option value="Flowchart Analysis">Flowchart Analysis: Generate descriptions from diagrams</option>
+                                            <option value="Code Generation">Code Generation: Create code from class diagrams</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="custom-prompt" class="form-label">Custom prompt (optional)</label>
+                                        <textarea id="custom-prompt" class="form-control" name="prompt" rows="3" placeholder="Enter a custom prompt for the model. If left empty, a default prompt will be used based on the selected task."></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="image-upload" class="form-label">Upload an image</label>
+                                        <input type="file" id="image-upload" class="form-control" name="image" accept="image/png, image/jpeg, image/jpg">
+                                    </div>
+
+                                    <div id="image-preview-container" class="mb-3" style="display: none;">
+                                        <img id="image-preview" class="image-preview" src="" alt="Preview">
+                                    </div>
+
+                                    <button type="submit" id="process-button" class="btn btn-success" disabled>Process Image</button>
+                                </form>
+
+                                <div id="loading" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    <p>Processing image...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Column -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Output</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="result-container" class="result-container">
+                                    <div id="result-placeholder" class="text-center text-muted">
+                                        <p>Process an image to see the results here</p>
+                                    </div>
+                                    <div id="result-content" style="display: none;"></div>
+                                </div>
+
+                                <div id="result-actions" style="display: none;">
+                                    <button id="download-button" class="btn btn-primary">Download Result</button>
+                                    <button id="render-html-button" class="btn btn-secondary" style="display: none;">Render HTML</button>
+                                    <button id="view-code-button" class="btn btn-info" style="display: none;">View Code</button>
+                                </div>
+
+                                <div id="html-preview" class="mt-3" style="display: none;"></div>
+                                <div id="code-preview" class="mt-3" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-5 pt-3 border-top text-center text-muted">
+            <p>Powered by IBM Granite Vision and Flask</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ startOnLoad: true });
+
+        // DOM elements
+        const authButton = document.getElementById('auth-button');
+        const refreshButton = document.getElementById('refresh-button');
+        const authStatus = document.getElementById('auth-status');
+        const processForm = document.getElementById('process-form');
+        const processButton = document.getElementById('process-button');
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('result-container');
+        const resultPlaceholder = document.getElementById('result-placeholder');
+        const resultContent = document.getElementById('result-content');
+        const resultActions = document.getElementById('result-actions');
+        const downloadButton = document.getElementById('download-button');
+        const renderHtmlButton = document.getElementById('render-html-button');
+        const viewCodeButton = document.getElementById('view-code-button');
+        const htmlPreview = document.getElementById('html-preview');
+        const codePreview = document.getElementById('code-preview');
+
+        // Store the result for downloading
+        let currentResult = '';
+        let currentTask = '';
+
+        // Authentication
+        authButton.addEventListener('click', async () => {
+            authButton.disabled = true;
+            authStatus.innerHTML = 'Authenticating...';
+            authStatus.className = 'alert alert-info';
+
+            try {
+                const response = await fetch('/authenticate', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    authStatus.innerHTML = data.message;
+                    authStatus.className = 'alert alert-success';
+                    refreshButton.disabled = false;
+                    processButton.disabled = false;
+                } else {
+                    authStatus.innerHTML = data.message;
+                    authStatus.className = 'alert alert-danger';
+                    authButton.disabled = false;
+                }
+            } catch (error) {
+                authStatus.innerHTML = 'Error: ' + error.message;
+                authStatus.className = 'alert alert-danger';
+                authButton.disabled = false;
+            }
+        });
+
+        // Refresh token
+        refreshButton.addEventListener('click', async () => {
+            refreshButton.disabled = true;
+            authStatus.innerHTML = 'Refreshing token...';
+            authStatus.className = 'alert alert-info';
+
+            try {
+                const response = await fetch('/refresh_token', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    authStatus.innerHTML = data.message;
+                    authStatus.className = 'alert alert-success';
+                    refreshButton.disabled = false;
+                } else {
+                    authStatus.innerHTML = data.message;
+                    authStatus.className = 'alert alert-danger';
+                    refreshButton.disabled = false;
+                }
+            } catch (error) {
+                authStatus.innerHTML = 'Error: ' + error.message;
+                authStatus.className = 'alert alert-danger';
+                refreshButton.disabled = false;
+            }
+        });
+
+        // Image preview
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    imagePreviewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreviewContainer.style.display = 'none';
+            }
+        });
+
+        // Process form
+        processForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Check if an image is selected
+            if (!imageUpload.files[0]) {
+                alert('Please select an image to process');
+                return;
+            }
+
+            // Show loading indicator
+            loading.style.display = 'block';
+            processButton.disabled = true;
+            resultPlaceholder.style.display = 'none';
+            resultContent.style.display = 'none';
+            resultActions.style.display = 'none';
+            htmlPreview.style.display = 'none';
+            codePreview.style.display = 'none';
+            renderHtmlButton.style.display = 'none';
+            viewCodeButton.style.display = 'none';
+
+            // Get form data
+            const formData = new FormData(processForm);
+            currentTask = formData.get('task');
+
+            try {
+                const response = await fetch('/process_image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Store the result
+                    currentResult = data.result;
+
+                    // Display the result based on the type
+                    if (data.result_type === 'html') {
+                        // HTML Generation
+                        resultContent.innerHTML = '<pre><code class="language-html">' + escapeHtml(data.result) + '</code></pre>';
+                        renderHtmlButton.style.display = 'inline-block';
+                    } else if (data.result_type === 'flowchart') {
+                        // Flowchart Analysis
+                        resultContent.innerHTML = marked.parse(data.result);
+                        
+                        // If mermaid code is present, render it
+                        if (data.mermaid_code) {
+                            setTimeout(() => {
+                                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                            }, 100);
+                        }
+                    } else if (data.result_type === 'code') {
+                        // Code Generation
+                        resultContent.innerHTML = marked.parse(data.result);
+                        
+                        // If code blocks are present, highlight them
+                        if (data.code_blocks && data.code_blocks.length > 0) {
+                            viewCodeButton.style.display = 'inline-block';
+                            
+                            // Prepare code preview
+                            codePreview.innerHTML = '';
+                            data.code_blocks.forEach(block => {
+                                const codeElement = document.createElement('div');
+                                codeElement.className = 'code-block';
+                                codeElement.innerHTML = '<h6>' + (block.language || 'Code') + '</h6>' +
+                                    '<pre><code class="language-' + block.language + '">' + 
+                                    escapeHtml(block.code) + '</code></pre>';
+                                codePreview.appendChild(codeElement);
+                            });
+                            
+                            // Highlight code blocks
+                            document.querySelectorAll('pre code').forEach((block) => {
+                                hljs.highlightElement(block);
+                            });
+                        }
+                    } else {
+                        // OCR and other tasks
+                        resultContent.innerHTML = marked.parse(data.result);
+                    }
+
+                    // Show the result and actions
+                    resultContent.style.display = 'block';
+                    resultActions.style.display = 'block';
+                    
+                    // Highlight code blocks
+                    document.querySelectorAll('pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                } else {
+                    resultContent.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    resultContent.style.display = 'block';
+                }
+            } catch (error) {
+                resultContent.innerHTML = '<div class="alert alert-danger">Error: ' + error.message + '</div>';
+                resultContent.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                processButton.disabled = false;
+            }
+        });
+
+        // Download result
+        downloadButton.addEventListener('click', async () => {
+            const formData = new FormData();
+            formData.append('result', currentResult);
+            formData.append('task', currentTask);
+
+            try {
+                const response = await fetch('/download_result', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Create a blob from the response
+                const blob = await response.blob();
+                
+                // Create a link to download the file
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = currentTask.toLowerCase().replace(' ', '_') + '_result.txt';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                alert('Error downloading the result: ' + error.message);
+            }
+        });
+
+        // Render HTML
+        renderHtmlButton.addEventListener('click', () => {
+            htmlPreview.innerHTML = currentResult;
+            htmlPreview.style.display = 'block';
+        });
+
+        // View code
+        viewCodeButton.addEventListener('click', () => {
+            codePreview.style.display = codePreview.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // Helper function to escape HTML
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
+            
